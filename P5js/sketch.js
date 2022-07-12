@@ -33,7 +33,7 @@ function setup() {
   locH = 0;
   locV = 0;
   spray = 0;
-  
+
   positionalArr = [2];
   prevX = 0;
   prevY = 0;
@@ -57,13 +57,13 @@ function serverConnected() {
 // list the ports
 function gotList(thelist) {
   // make a select menu and position it:
-   portSelector = createSelect();
-  portSelector.position(10,height-50);
+  portSelector = createSelect();
+  portSelector.position(10, height - 50);
   console.log("List of Serial Ports:");
 
   for (let i = 0; i < thelist.length; i++) {
     console.log(i + " " + thelist[i]);
-       portSelector.option(thelist[i]);
+    portSelector.option(thelist[i]);
   }
   // set a handler for when a port is selected from the menu:
   portSelector.changed(mySelectEvent);
@@ -71,8 +71,9 @@ function gotList(thelist) {
 
 function gotOpen() {
   console.log("Serial Port is Open");
-   // send a byte to prompt the microcontroller to send:
-  serial.write('x');
+  // send a byte to prompt the microcontroller to send:
+  let test = 1;
+  serial.write(test);
 }
 
 function gotClose() {
@@ -86,7 +87,7 @@ function gotError(theerror) {
 
 function mySelectEvent() {
   let item = portSelector.value();
-   // if there's a port open, close it:
+  // if there's a port open, close it:
   if (serial.serialport != null) {
     serial.close();
   }
@@ -101,26 +102,28 @@ function gotData() {
   let inString = serial.readStringUntil("\n");
   //check to see that there's actually a string there:
   if (inString.length > 0) {
-      if (inString !== 'hello'){
-    // split the string on the commas
-    let sensors = split(inString, ",");
-    // if there are three elements
-    if (sensors.length > 0) {
-      //map JS movement to an incremental 
-      //value up to 10.
-      locV = int(map(sensors[0], 255 / 2, 255, 0, 10));
-      locH = int(map(sensors[1], 255 / 2, 255, 0, 10));
-      spray = int(sensors[2]);
-      print("spray" + spray);
+    if (inString !== "hello") {
+      // split the string on the commas
+      let sensors = split(inString, ",");
+      // if there are three elements
+      if (sensors.length > 0) {
+        //map JS movement to an incremental
+        //value up to 10.
+        locV = int(map(sensors[0], 255 / 2, 255, 0, 10));
+        locH = int(map(sensors[1], 255 / 2, 255, 0, 10));
+        spray = int(sensors[2]);
+        print("spray" + spray);
+      }
     }
-  }
-    serial.write('x'); // send a byte requesting more serial 
+    let test = 1;
+    serial.write(test); // send a byte requesting more serial
+    sendStepsArduino();
   }
 }
 
 function draw() {
   background(220);
-updateXY();
+  updateXY();
   drawMotors();
   drawCradle();
   leftSide();
@@ -144,7 +147,6 @@ function drawCradle() {
   let xyText = xyCoords();
   text("x" + xyText.x + ", y" + xyText.y, cradleX, cradleY + 55);
   pop();
-
 }
 
 //change this function name
@@ -188,7 +190,7 @@ function mouseDragged() {
 }
 
 // updates xy pos from joystick
-function updateXY(){
+function updateXY() {
   cradleX += locH;
   cradleY += locV;
 }
@@ -196,20 +198,17 @@ function updateXY(){
 //Returns xy of the cradle
 function xyCoords() {
   //returns a vec coord
-  
+
   let x = cradleX - motorOne;
   let y = cradleY - yMargin;
   let xy = createVector(x, y);
-  if(x != prevX && y != prevY ){
+  if (x != prevX && y != prevY) {
     // sendStepsArduino();
-    print( prevX, prevY);
+    print(prevX, prevY);
   }
-  
-  
+
   prevX = x;
   prevY = y;
- 
-  
 
   return xy;
 }
@@ -235,19 +234,22 @@ function setupSerial() {
   serial.on("close", gotClose);
 }
 
-function sendStepsArduino(){
-
-    let outByte = stepperRot(l, r);
-     serial.write(outByte);
-  
+//send message to arduino
+function sendStepsArduino() {
+  let message = stepperRot(L, R);
+  console.log(message);
+  serial.write(message);
 }
 
-function stepperRot(_left, _right){
-  let leftRot = map(_left, 0, 275, 0, 2000);
-  let rightRot = map(_right, 0, 275, 0, 2000);
-  serial.write(leftRot)
-  serial.write(",")
-  serial.write(rightRot)
-  
-  return steps
+//convert side lengths into stepper rotations and return string
+function stepperRot(_left, _right) {
+  let lRot = map(_left, 0, 275, 0, 2000);
+  let rRot = map(_right, 0, 275, 0, 2000);
+  let sideStrg = [2];
+  sideStrg[0] = str(round(lRot));
+  sideStrg[1] = str(round(rRot));
+  let separator = " ";
+  let message = join(sideStrg, separator)
+
+  return message;
 }
