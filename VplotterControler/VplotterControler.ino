@@ -26,43 +26,32 @@ establishContact();
 
 void loop(){
 
-// when characters arrive over the serial port...
-  if (Serial.available()) {
-    // wait a bit for the entire message to arrive
-    delay(100);
-    // clear the screen
-    lcd.clear();
-    // read all the available characters
-    while (Serial.available() > 0) {
-      // display each character to the LCD
-      lcd.write(Serial.read());
-    }
-  }
-
   
   if (Serial.available() > 0) {
+     delay(100);
      // clear the screen
     lcd.clear();
+    while (Serial.available() > 0) {
     // read the incoming byte:
     int inByte = Serial.read();
-    lcd.write(inByte);
+    lcd.write(inByte);  
     // read the sensor:
-    sensorValueX = analogRead(A0);
-    int xValue = map(sensorValueX, 0, 1023, 0, 255);
-    // print the results:
-    Serial.print(xValue);
-    Serial.print(",");
-    // read the sensor:
-    sensorValueY = analogRead(A1);
-    int yValue = map(sensorValueY, 0, 1023, 0, 255); // 0 to 255 range so that the digital pins can read them
-    // print the results:
-    Serial.print(yValue);
-    Serial.print(",");
-    // read the sensor:
-    bValue = digitalRead(2);
-    // print the results:
-    Serial.println(bValue);
-
+//    sensorValueX = analogRead(A0);
+//    int xValue = map(sensorValueX, 0, 1023, 0, 255);
+//    // print the results:
+//    Serial.print(xValue);
+//    Serial.print(",");
+//    // read the sensor:
+//    sensorValueY = analogRead(A1);
+//    int yValue = map(sensorValueY, 0, 1023, 0, 255); // 0 to 255 range so that the digital pins can read them
+//    // print the results:
+//    Serial.print(yValue);
+//    Serial.print(",");
+//    // read the sensor:
+//    bValue = digitalRead(2);
+//    // print the results:
+//    Serial.println(bValue);
+    }
   }
 }
 
