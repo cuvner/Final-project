@@ -6,6 +6,7 @@
 
 
   This example code is in the public domain.
+  https://www.arduino.cc/reference/en/language/functions/communication/serial/parseint/
   https://eecs.blog/sending-multiple-values-over-serial-to-arduino/
   https://forum.arduino.cc/t/serial-input-basics-updated/382007/3
   https://www.delftstack.com/howto/arduino/arduino-parse-string/
@@ -16,47 +17,77 @@
 
 */
 
+
+// Include the AccelStepper Library
+#include <AccelStepper.h>
+#include <elapsedMillis.h>
+
+
+// Motor Connections (constant current, step/direction bipolar motor driver)
+
+// Stepper Motor X
+const int stepPinX = 2; //X.STEP
+const int dirPinX = 5; // X.DIR
+
+// Stepper Motor Y
+const int stepPinY = 3;// x.step
+const int dirPinY = 6;//x.dir
+
+elapsedMillis printTime;
+
 int sensorValueX = 0 ;
 int sensorValueY = 0 ;
 int bValue = 0 ;
 int myDistVals[2];// delete
-
-String MyS;
-int MyP = 0;
-int MyI = 0;
-String array[3];
-int index = 0;
+int xStepDist = 0;
+int yStepDist = 0;
 
 
 // include the library code:
 #include <LiquidCrystal.h>
 // Include the AccelStepper Library
 #include <AccelStepper.h>
+// Creates an instance - Pick the version you want to use and un-comment it. That's the only required change.
+AccelStepper myStepper(AccelStepper::DRIVER, stepPinX, dirPinX);           // works for a4988 (Bipolar, constant current, step/direction driver)
 
-// initialize the library by associating any needed LCD interface pin
-// with the arduino pin number it is connected to
-const int rs = 12, en = 11, d4 = 5, d5 = 4, d6 = 3, d7 = 2;
-LiquidCrystal lcd(rs, en, d4, d5, d6, d7);
 
 String inputString = "";         // a String to hold incoming data
 bool stringComplete = false;  // whether the string is complete
 
 void setup() {
-  Serial.begin(9600) ;
-  pinMode(2, INPUT);
-  digitalWrite(2, HIGH);
-
-  // set up the LCD's number of columns and rows:
-  lcd.begin(16, 2);
   // initialize the serial communications:
   Serial.begin(9600);
+
+ // set the maximum speed, acceleration factor, and the target position.
+  myStepper.setMaxSpeed(800.0);   // the motor accelerates to this speed exactly without overshoot. Try other values.
+  myStepper.setAcceleration(50.0);   // try other acceleration rates.
+  myStepper.moveTo(10000); 
+  // For negative rotation
+  //myStepper.moveTo(-10000);    // This will demonstrate a move in the negative direction.
 
   //hand shake protocol
   establishContact();
 }
 
-void loop() {
+int count = 0;    // tracks seconds to trigger an action if desired.
 
+void loop() {
+  float mSpeed;
+  if (printTime >= 1000) {    // reports speed and position each second
+    printTime = 0;
+    mSpeed = myStepper.speed();
+    Serial.print(mSpeed);
+    Serial.print("  ");
+    Serial.print(myStepper.currentPosition());
+    Serial.print("  ");
+    Serial.println(count);
+    if (count++ == 4){      // uncomment an action to see the response in the serial monitor
+      myStepper.moveTo(xStepDist);
+//      myStepper.move(100);
+//      myStepper.stop();
+    }
+  }
+  myStepper.run();
 
   // print the string when a newline arrives:
   //  if (stringComplete) {
@@ -108,9 +139,7 @@ void establishContact() {
 }
 
 void serialEvent() {
-  delay(100);
-  lcd.clear();
-  index = 0;
+
 
   while (Serial.available()) {
     // get the new byte:
@@ -118,10 +147,12 @@ int rcIntOne = Serial.parseInt();
 int rcIntTwo = Serial.parseInt();
 String x = String(rcIntOne);
 String y = String(rcIntTwo);
+xStepDist = rcIntOne;
+yStepDist = rcIntTwo;
 
-lcd.print("x" + x);
- lcd.setCursor(0, 1);
-lcd.print("y" + y);
+
+Serial.print("x" + x);
+Serial.print("y" + y);
     
     // if the incoming character is a newline, set a flag so the main loop can
     // do something about it:
