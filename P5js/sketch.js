@@ -1,6 +1,7 @@
 let serial; // variable for the serial object
 let latestData = "waiting for data"; // variable to hold the data
 
+
 let xMargin, yMargin, pitchMotors, motorOne, motorTwo, pulley;
 
 let cradleX, cradleY;
@@ -243,11 +244,15 @@ function sendStepsArduino() {
 
 //convert side lengths into stepper rotations and return string
 function stepperRot(_left, _right) {
-  let lRot = map(_left, 0, 275, 0, 2000);
-  let rRot = map(_right, 0, 275, 0, 2000);
-  let sideStrg = [2];
-  sideStrg[0] = str(round(lRot));
-  sideStrg[1] = str(round(rRot));
+  //maps steps
+  // let lRot = map(_left, 0, 275, 0, 2000);
+  // let rRot = map(_right, 0, 275, 0, 2000);
+  //Distance
+  
+  let sideStrg = [3];
+  sideStrg[0] = str(round(_left));
+  sideStrg[1] = str(round(_right));
+  // sideStrg[2] = "3";
   let separator = " ";
   let message = join(sideStrg, separator)
 
